@@ -1,7 +1,76 @@
+# ---------- Build output ----------
 target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+hs_err_pid*
+replay_pid*
+
+# Keep the Maven wrapper if you add one
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---------- Secrets and local config (NEVER commit) ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+secrets/
+application-local.yml
+application-local.yaml
+application-local.properties
+application-secret*.yml
+application-secret*.properties
+
+# ---------- Logs and temp files ----------
+*.log
+logs/
+*.tmp
+*.swp
+*~
+
+# ---------- IDEs ----------
 .idea/
 *.iml
+*.ipr
+*.iws
 .vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.springBeans
+.sts4-cache/
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ---------- OS files ----------
 .DS_Store
-.env
-*.log
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------- Local Docker data ----------
+pgdata/
+docker-data/
+kafka-data/
+
+# ---------- Archives ----------
+*.zip
+*.tar.gz
