@@ -1,0 +1,60 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: payment-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:appdb}?sslmode=${DB_SSLMODE:prefer}
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD:app}
+    hikari:
+      schema: payment_service     # so plain JDBC (ProcessedWebhookStore) also resolves tables in this schema
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # Flyway owns the schema, Hibernate only checks it matches
+    properties:
+      hibernate:
+        default_schema: payment_service
+
+  flyway:
+    schemas: payment_service
+    default-schema: payment_service
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: payment-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+outbox:
+  poll-interval-ms: 1000
+  batch-size: 50
+
+webhook:
+  secret: ${WEBHOOK_SECRET:dev-only-secret-change-me}
+  tolerance-seconds: 300          # reject webhooks whose timestamp is older than this (replay protection)
+
+# Stand-in for a real payment gateway (Stripe, Razorpay...). It "charges" after a delay and then calls our
+# own webhook endpoint with a signed request, exactly like a real gateway would.
+mock-gateway:
+  delay-ms: 2000
+  duplicate-webhooks: false       # set true to see the same webhook delivered twice and ignored the second time
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

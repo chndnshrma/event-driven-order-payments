@@ -1,0 +1,51 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: order-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:appdb}?sslmode=${DB_SSLMODE:prefer}
+    username: ${DB_USERNAME:app}
+    password: ${DB_PASSWORD:app}
+    hikari:
+      schema: order_service       # so plain JDBC (ProcessedEventStore) also resolves tables in this schema
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # Flyway owns the schema, Hibernate only checks it matches
+    properties:
+      hibernate:
+        default_schema: order_service
+
+  # "Database per service" on one Postgres/Supabase instance: each service owns its own schema.
+  flyway:
+    schemas: order_service
+    default-schema: order_service
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: order-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+outbox:
+  poll-interval-ms: 1000
+  batch-size: 50
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
